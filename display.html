@@ -38,6 +38,7 @@
         /* Container สำหรับการกระจายตัว */
         #commentsContainer {
             display: flex;
+            flex-direction: row; /* เรียงจากบนลงล่าง */
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
@@ -50,7 +51,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* ส่วนสำคัญที่ทำให้ดูไม่เป็นระเบียบ */
             margin: 10px; 
         }
 
@@ -64,6 +64,7 @@
             animation: float 4s ease-in-out infinite;
         }
     </style>
+    <meta http-equiv="refresh" content="10">
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen p-6">
     <div class="max-w-7xl mx-auto">
@@ -71,7 +72,6 @@
             <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
                 บอร์ดแสดงความคิดเห็น
             </h1>
-          
         </div>
 
         <div id="loading" class="flex flex-col items-center justify-center py-20">
@@ -112,14 +112,18 @@
                     return;
                 }
 
-                container.innerHTML = data.map((item, index) => {
+                // กลับลำดับข้อมูล: ให้ข้อความล่าสุด (ที่ปกติอยู่ท้าย Array) มาอยู่หน้าสุด
+                const reversedData = [...data].reverse();
+
+                container.innerHTML = reversedData.map((item, index) => {
+                    // เลือกสีโดยใช้ index จากข้อมูลที่กลับด้านแล้ว
                     const color = colors[index % colors.length];
                     
                     // สุ่มค่าต่างๆ เพื่อความไม่เป็นระเบียบ
-                    const randomRotation = Math.floor(Math.random() * 10) - 5; // เอียง -5 ถึง 5 องศา
-                    const randomYOffset = Math.floor(Math.random() * 40) - 20; // ขยับขึ้นลง -20 ถึง 20px
-                    const randomDelay = (Math.random() * 2).toFixed(1); // สุ่มดีเลย์อนิเมชั่นลอย
-                    const randomScale = (0.9 + Math.random() * 0.2).toFixed(2); // สุ่มขนาด 0.9 - 1.1
+                    const randomRotation = Math.floor(Math.random() * 10) - 5; 
+                    const randomYOffset = Math.floor(Math.random() * 40) - 20; 
+                    const randomDelay = (Math.random() * 2).toFixed(1); 
+                    const randomScale = (0.9 + Math.random() * 0.2).toFixed(2); 
 
                     return `
                         <div class="bubble-wrapper animate-float" style="
