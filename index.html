@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกความคิดเห็น - Smoke Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { 
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-smoke:focus {
+            box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.2);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-6 text-slate-700">
+    
+    <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md transition-all duration-500 hover:shadow-slate-300">
+        <div class="flex flex-col items-center mb-8">
+            <div class="bg-slate-100 p-4 rounded-full mb-4">
+                <i data-lucide="message-square-quote" class="w-8 h-8 text-slate-500"></i>
+            </div>
+            <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">แสดงความคิดเห็น</h1>
+            <p class="text-slate-400 text-sm mt-1">แบ่งปันเรื่องราวของคุณกับเรา</p>
+        </div>
+        
+        <div class="space-y-6">
+            <div class="relative">
+                <textarea 
+                    id="commentInput" 
+                    rows="5" 
+                    class="w-full p-5 bg-slate-50 border border-slate-200 rounded-3xl focus:ring-0 focus:border-slate-400 focus:outline-none resize-none transition-all duration-300 input-smoke text-slate-700 placeholder:text-slate-400"
+                    placeholder="คุณกำลังคิดอะไรอยู่..."
+                ></textarea>
+            </div>
+            
+            <button 
+                onclick="saveComment()" 
+                id="saveBtn"
+                class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 group shadow-lg shadow-slate-200"
+            >
+                <i data-lucide="send" class="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                <span>บันทึกข้อความ</span>
+            </button>
+            
+            <div id="status" class="text-center text-sm font-medium py-2 rounded-xl hidden"></div>
+            
+          
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwSxyLygZ3ujv69xH1beXKx4yxpd19gabtYjZH-tSa_9fe72UbsWqPFx_6cC9tJG_sW/exec';
+
+        async function saveComment() {
+            const comment = document.getElementById('commentInput').value.trim();
+            const btn = document.getElementById('saveBtn');
+            const status = document.getElementById('status');
+
+            if (!comment) {
+                showMessage('กรุณาพิมพ์ข้อความก่อนบันทึก', 'bg-red-50 text-red-500');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> <span>กำลังบันทึก...</span>`;
+            lucide.createIcons();
+            
+            status.classList.remove('hidden');
+            showMessage('รอสักครู่...', 'bg-slate-50 text-slate-500');
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment: comment })
+                });
+
+                document.getElementById('commentInput').value = '';
+                showMessage('บันทึกสำเร็จเรียบร้อยแล้ว!', 'bg-green-50 text-green-600');
+            } catch (error) {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'bg-red-50 text-red-500');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="send" class="w-5 h-5"></i> <span>บันทึกข้อความ</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        function showMessage(msg, classes) {
+            const status = document.getElementById('status');
+            status.className = `text-center text-sm font-medium py-3 rounded-2xl transition-all duration-300 ${classes}`;
+            status.innerText = msg;
+            status.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

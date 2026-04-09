@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บอร์ดแสดงความคิดเห็น</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            overflow-x: hidden;
+        }
+        /* สไตล์พื้นฐานของวงรี */
+        .comment-bubble {
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1.5rem 2.5rem;
+            min-width: 150px;
+            max-width: 280px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 2px solid rgba(255,255,255,0.6);
+            cursor: default;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .comment-bubble:hover {
+            transform: scale(1.1) rotate(0deg) !important;
+            z-index: 50;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Container สำหรับการกระจายตัว */
+        #commentsContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            min-height: 60vh;
+            padding: 2rem;
+        }
+
+        .bubble-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* ส่วนสำคัญที่ทำให้ดูไม่เป็นระเบียบ */
+            margin: 10px; 
+        }
+
+        /* อนิเมชั่นลอยเบาๆ */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col items-center mb-16 text-center">
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
+                บอร์ดแสดงความคิดเห็น
+            </h1>
+          
+        </div>
+
+        <div id="loading" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
+        </div>
+
+        <!-- พื้นที่แสดงวงรีแบบกระจายตัว -->
+        <div id="commentsContainer">
+            <!-- ข้อมูลจะถูกโหลดที่นี่ -->
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwSxyLygZ3ujv69xH1beXKx4yxpd19gabtYjZH-tSa_9fe72UbsWqPFx_6cC9tJG_sW/exec';
+
+        const colors = [
+            { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
+            { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-200' },
+            { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' },
+            { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
+            { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' },
+            { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200' },
+            { bg: 'bg-sky-100', text: 'text-sky-700', border: 'border-sky-200' },
+            { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200' }
+        ];
+
+        async function fetchComments() {
+            const container = document.getElementById('commentsContainer');
+            const loading = document.getElementById('loading');
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getComments`);
+                const data = await response.json();
+                loading.classList.add('hidden');
+                
+                if (data.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">ยังไม่มีข้อมูล</p>';
+                    return;
+                }
+
+                container.innerHTML = data.map((item, index) => {
+                    const color = colors[index % colors.length];
+                    
+                    // สุ่มค่าต่างๆ เพื่อความไม่เป็นระเบียบ
+                    const randomRotation = Math.floor(Math.random() * 10) - 5; // เอียง -5 ถึง 5 องศา
+                    const randomYOffset = Math.floor(Math.random() * 40) - 20; // ขยับขึ้นลง -20 ถึง 20px
+                    const randomDelay = (Math.random() * 2).toFixed(1); // สุ่มดีเลย์อนิเมชั่นลอย
+                    const randomScale = (0.9 + Math.random() * 0.2).toFixed(2); // สุ่มขนาด 0.9 - 1.1
+
+                    return `
+                        <div class="bubble-wrapper animate-float" style="
+                            transform: translateY(${randomYOffset}px) scale(${randomScale});
+                            animation-delay: ${randomDelay}s;
+                        ">
+                            <div class="comment-bubble ${color.bg} ${color.border} ${color.text}" style="
+                                transform: rotate(${randomRotation}deg);
+                            ">
+                                <span class="font-medium leading-tight">
+                                    ${escapeHtml(item.text)}
+                                </span>
+                            </div>
+                            <p class="mt-3 text-[10px] text-gray-400 font-light tracking-widest uppercase">
+                                ${item.time || ''}
+                            </p>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                loading.innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.onload = fetchComments;
+    </script>
+</body>
+</html>
